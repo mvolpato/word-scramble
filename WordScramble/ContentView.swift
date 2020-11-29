@@ -16,6 +16,8 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
 
+    @State private var score = 0
+
     var body: some View {
         NavigationView {
             VStack {
@@ -28,8 +30,13 @@ struct ContentView: View {
                     Image(systemName: "\($0.count).circle")
                     Text($0)
                 }
+                Text("Score for '\(rootWord)': \(score)")
             }
             .navigationBarTitle(rootWord)
+            .navigationBarItems(leading:
+                                    Button(action: startGame) {
+                                        Text("Restart")
+                                    })
             .onAppear(perform: startGame)
             .alert(isPresented: $showingError) {
                 Alert(title: Text(errorTitle), message: Text(errorMessage), dismissButton: .default(Text("OK")))
@@ -61,8 +68,16 @@ struct ContentView: View {
             return
         }
 
+        guard isValid(word: answer) else {
+            wordError(title: "Word is not valid", message: "Try a longer word and do not use '\(rootWord)'.")
+            return
+        }
+
         usedWords.insert(answer, at: 0)
         newWord = ""
+
+        // Calculate score, total number of letter used counting all words.
+        score += answer.count
     }
 
     func startGame() {
@@ -75,6 +90,8 @@ struct ContentView: View {
 
                 // 4. Pick one random word, or use "silkworm" as a sensible default
                 rootWord = allWords.randomElement() ?? "silkworm"
+                usedWords = [String]()
+                newWord = ""
 
                 // If we are here everything has worked, so we can exit
                 return
@@ -109,6 +126,10 @@ struct ContentView: View {
         let misspelledRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
 
         return misspelledRange.location == NSNotFound
+    }
+
+    func isValid(word: String) -> Bool {
+        return word.count > 2 && word != rootWord
     }
 
     func wordError(title: String, message: String) {
