@@ -92,6 +92,7 @@ struct ContentView: View {
                 rootWord = allWords.randomElement() ?? "silkworm"
                 usedWords = [String]()
                 newWord = ""
+                score = 0
 
                 // If we are here everything has worked, so we can exit
                 return
